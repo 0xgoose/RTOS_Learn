@@ -9,3 +9,6 @@ git add .<br>
 git commit -m "test upload"<br>
 git remote add origin https://github.com/0xgoose/RTOS_Learn<br>
 git push -f origin master<br>
+
+#3 - Link do rados rtos<br>
+https://github.com/rosly/rados
