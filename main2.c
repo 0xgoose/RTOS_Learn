@@ -57,7 +57,15 @@
 static __OS_TYPE_SIZE__ stack_task1[STACK_SIZE];
 static __OS_TYPE_SIZE__ stack_task2[STACK_SIZE];
 
-volatile int test = 0;
+// prymitywna metoda, ale póki co musi wystarczyć
+// zanim dojdę do bardziej dynamicznego dodawania
+// zadań. Obecnie jest statycznie z góry zdefiniowana
+// ilość zadań i licznik. Proste mechanizmy...
+volatile int task_counter = 0;
+volatile int *tasks[MAX_TASKS];
+volatile int *current_task;
+
+volatile char c;
 
 typedef struct {
     __OS_TYPE_SIZE__ sp;
@@ -66,7 +74,12 @@ typedef struct {
 typedef struct {
     os_context_t ctx;
     __OS_TYPE_SIZE__ *ptr;
-    int *list[MAX_TASKS];    
+    // jeśli jest tasks jako globalna zmienna z określoną
+    // wartością tablicy, gdzie parametr ten określa macro
+    // MAX_TASKS, wtedy ta lista zabiera zbędne miejsce.
+    // Jeśli tasks wypali, wtedy to trzeba usunć ze strktury.
+    // Ale zastanawiam sie jak nie ograniczać ilości zadań... 
+    int *list[MAX_TASKS]; 
 } os_task_t;
 
 typedef struct {
@@ -82,7 +95,7 @@ void os_schedule()
     
 }
 
-void os_switch_contex() 
+void os_switch_contex(int num) 
 {
     // store context current task
     // get next task from list
@@ -90,14 +103,23 @@ void os_switch_contex()
     context_store();
     
     /*
-    if (test > 0) {
-        asm volatile ("call task2");
-        test = 0;
-    } else {
-        asm volatile ("call task1");
-        test++;
+    int i, current;
+    for (i = 0; i < task_counter; i++) {
+        // czy to jest potrzebne?
+        // Być może zmienna globalna z obecnym zadaniem
+        // przyda sie w innej części kodu, więc niech będzie
+        // dla testu. Potem się zobaczy.
+        current_task = tasks[i]; 
+        
+        // Ok, co teraz. Nie mam wybierania zadania 
+        // według priorytetu itp. mechanizmu. Ma być proste
+        // przełączanie kotekstu, wybierając po koleii zadania.
+        
     }
     */
+
+    if (c <= task_counter && c >= 0) 
+        current_task = tasks[c]; 
     
     context_restore();
     
@@ -128,16 +150,18 @@ void os_task_init(os_task_t *task, os_stats_tt *stats, void *stack_param, void *
     
     task->ctx.sp = (__OS_TYPE_SIZE__)stack;
     
+    tasks[task_counter++] = t;
+    
     // trap
-    while(1);
+    //while(1);
 }
 
 void os_add_task_to_list(os_task_t *task, os_stats_tt *stats, void *stack, void *t)
 {
     task->list[stats->num_of_tasks] = t;
     task->ptr = t;
-    stats->num_of_tasks++;
     os_task_init(task, stats, stack, t);
+    stats->num_of_tasks++;
 }
 
 void idle_task()
@@ -161,19 +185,19 @@ int task2()
 
 int main()
 {
-    char c, j;
+    char i, j;
     char buff[100];
     
-    int i;
     //task = &task_t;   
     //stats = &stats_t;
     //stats->os_task_list_size = sizeof(task->sp);
     os_add_task_to_list(&task_1, &stats_1, stack_task1, task1);
     os_add_task_to_list(&task_2, &stats_2, stack_task2, task2);
     
-    while(1) {
-        os_switch_contex();
-    }
+    do {
+        os_switch_contex(c = c - 48);
+        printf("%d %p %p %p\n", c, current_task, task1, task2);
+    } while ((c = getchar()) != 'q');
     
     
     return 0;
