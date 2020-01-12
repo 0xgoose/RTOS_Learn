@@ -14,6 +14,7 @@ git push -f origin master<br>
 https://github.com/rosly/rados
 
 <br><br>
+#4 - zrzut struktury task oraz zmiennej stack<br>
 ```c
 :~/RTOS$ gdb -q a.out
 Reading symbols from a.out...done.
@@ -77,4 +78,6 @@ es             0x0	0
 fs             0x0	0
 gs             0x0	0
 (gdb) 
+(gdb) p stack
+$1 = (uint64_t *) 0x6010b8 <stack_task1+56>
 ```
