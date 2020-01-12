@@ -129,7 +129,7 @@ void os_task_init(os_task_t *task, os_stats_tt *stats, void *stack_param, void *
     task->ctx.sp = (__OS_TYPE_SIZE__)stack;
     
     // trap
-    //while(1);
+    while(1);
 }
 
 void os_add_task_to_list(os_task_t *task, os_stats_tt *stats, void *stack, void *t)
