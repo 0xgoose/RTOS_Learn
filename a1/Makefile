@@ -6,6 +6,7 @@ all:
 
 clean:
 	rm -f *.o *.out
+	ls -n
 
 test:
 	gdb -q a.out
